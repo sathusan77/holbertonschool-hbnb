@@ -1,73 +1,100 @@
 ## 1️⃣ User Registration
 
-User
------
-+ id : UUID
-+ first_name : string
-+ last_name : string
-+ email : string
-+ password : string
-
-Methods:
-+ register()
-+ update_profile()
-+ delete()
-
+Client
+   |
+   | POST /users (user_data)
+   v
+API Layer
+   | Validate request (JSON + required fields)
+   v
+Business Layer
+   | verify_email_not_used(email)
+   |
+   |---- If email already exists ----
+   |        return 409 Conflict
+   |
+   |---- If email is available ----
+   |        create_user_object()
+   v
+Persistence Layer
+   | store_user(User)
+   v
+Business Layer
+   | User successfully created
+   v
+API Layer
+   | 201 Created (user info)
+   v
+Client
 
 ## 2️⃣ Place Creation
 
-Place
-------
-+ id : UUID
-+ title : string
-+ description : string
-+ price : float
-+ latitude : float
-+ longitude : float
-+ owner_id : UUID
-
-Methods:
-+ create_place()
-+ update_place()
-+ delete_place()
-
-
-Relationship:
-One User → can create → Multiple Places
-
+Client
+   |
+   | POST /places (place_data)
+   v
+Presentation (API)
+   | Validate JSON + required fields
+   v
+Business Layer
+   | check_user_exists(owner_id)
+   | create_place(place_data)
+   v
+Persistence Layer
+   | save_place(Place)
+   v
+Business Layer
+   | Success
+   v
+Presentation
+   | 201 Created (place payload)
+   v
+Client
 
 ## 3️⃣ Review Submission
 
-Review
--------
-+ id : UUID
-+ text : string
-+ rating : int
-+ user_id : UUID
-+ place_id : UUID
-
-Methods:
-+ create_review()
-+ update_review()
-+ delete_review()
-
-
-Relationship:
-One User → can write → Multiple Reviews  
-One Place → can have → Multiple Reviews
-
+Client
+   |
+   | POST /reviews (review_data)
+   v
+Presentation (API)
+   | Validate JSON
+   v
+Business Layer
+   | check_user_exists(user_id)
+   | check_place_exists(place_id)
+   | create_review(review_data)
+   v
+Persistence Layer
+   | save_review(Review)
+   v
+Business Layer
+   | Success
+   v
+Presentation
+   | 201 Created (review payload)
+   v
+Client
 
 ## 4️⃣ Fetching List of Places
 
-System Behavior
-----------------
-+ get_all_places()
-+ get_place_by_id(id)
-+ filter_places_by_price()
-+ filter_places_by_location()
-
-This allows users to:
-- See all places
-- Search for a place
-- Filter results
+Client
+   |
+   | GET /places
+   v
+Presentation (API)
+   v
+Business Layer
+   | get_all_places()
+   v
+Persistence Layer
+   | fetch_places()
+   v
+Business Layer
+   | return list
+   v
+Presentation
+   | 200 OK (list of places)
+   v
+Client
 
