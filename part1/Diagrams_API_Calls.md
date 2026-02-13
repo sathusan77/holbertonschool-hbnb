@@ -1,82 +1,26 @@
-# API Calls - Sequence Diagrams
+# 1 User Registration
 
-------------------------------------------------------------
-1️⃣ User Registration
-------------------------------------------------------------
+sequenceDiagram
+    actor User
+    participant Service as API Layer
+    participant Logic as Business Layer
+    participant Repo as Data Layer
 
-Client        API Layer        Business Layer        Database
-  |               |                  |                  |
-  | POST /users   |                  |                  |
-  |-------------->|                  |                  |
-  |               | Validate data    |                  |
-  |               |----------------->|                  |
-  |               |                  | check_email()    |
-  |               |                  |----------------->|
-  |               |                  |<-----------------|
-  |               |                  | email available  |
-  |               |                  | create_user()    |
-  |               |                  |----------------->|
-  |               |                  | save_user()      |
-  |               |                  |----------------->|
-  |               |                  |<-----------------|
-  |               |<-----------------| Success          |
-  |<--------------| 201 Created      |                  |
+    User->>Service: POST /users (data)
+    Service->>Service: Check JSON & required fields
+    Service->>Logic: register_user(data)
 
+    Logic->>Repo: email_exists(email)
+    Repo-->>Logic: true | false
 
-------------------------------------------------------------
-2️⃣ Place Creation
-------------------------------------------------------------
-
-Client        API Layer        Business Layer        Database
-  |               |                  |                  |
-  | POST /places  |                  |                  |
-  |-------------->|                  |                  |
-  |               | Validate data    |                  |
-  |               |----------------->|                  |
-  |               |                  | verify_owner()   |
-  |               |                  |----------------->|
-  |               |                  | create_place()   |
-  |               |                  |----------------->|
-  |               |                  | save_place()     |
-  |               |                  |----------------->|
-  |               |                  |<-----------------|
-  |               |<-----------------| Success          |
-  |<--------------| 201 Created      |                  |
-
-
-------------------------------------------------------------
-3️⃣ Review Submission
-------------------------------------------------------------
-
-Client        API Layer        Business Layer        Database
-  |               |                  |                  |
-  | POST /reviews |                  |                  |
-  |-------------->|                  |                  |
-  |               | Validate data    |                  |
-  |               |----------------->|                  |
-  |               |                  | check_user()     |
-  |               |                  |----------------->|
-  |               |                  | check_place()    |
-  |               |                  |----------------->|
-  |               |                  | save_review()    |
-  |               |                  |----------------->|
-  |               |                  |<-----------------|
-  |               |<-----------------| Success          |
-  |<--------------| 201 Created      |                  |
-
-
-------------------------------------------------------------
-4️⃣ Fetching List of Places
-------------------------------------------------------------
-
-Client        API Layer        Business Layer        Database
-  |               |                  |                  |
-  | GET /places   |                  |                  |
-  |-------------->|                  |                  |
-  |               |----------------->| get_all_places() |
-  |               |                  |----------------->|
-  |               |                  | fetch_places()   |
-  |               |                  |<-----------------|
-  |               |<-----------------| Return list      |
-  |<--------------| 200 OK           |                  |
+    alt Email already used
+        Logic-->>Service: Registration failed
+        Service-->>User: 409 Conflict
+    else Email available
+        Logic->>Logic: Build User object
+        Logic->>Repo: save(User)
+        Repo-->>Logic: saved
+        Logic-->>Service: User created
+        Service-->>User: 201 Created
+    end
 
